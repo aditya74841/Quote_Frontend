@@ -183,19 +183,36 @@ export default function HomeScreen() {
         const response = await axios.get<Quote>(
           "https://quote-backend-xqfm.onrender.com/api/v1/quote/today"
         );
-        setQuoteData(response.data);
-
-        const historyResponse = await axios.get<QuoteHistory[]>(
-          "https://quote-backend-xqfm.onrender.com/api/v1/quote/all"
-        );
-        setQuoteHistoryData(historyResponse.data);
+  
+        if (response.data?.quote) {
+          setQuoteData(response.data);
+        } else {
+          throw new Error("No quote found in primary API");
+        }
       } catch (error) {
-        console.error("Error fetching quote:", error);
+        console.warn("Primary API failed, trying fallback API...");
+  
+        try {
+          const fallbackResponse = await axios.get<{ q: string; a: string }[]>(
+            "https://zenquotes.io/api/today"
+          );
+  
+          if (fallbackResponse.data && fallbackResponse.data.length > 0) {
+            setQuoteData({
+              quote: fallbackResponse.data[0].q,
+              author: fallbackResponse.data[0].a,
+            });
+          } else {
+            throw new Error("No quote found in fallback API");
+          }
+        } catch (fallbackError) {
+          console.error("Both APIs failed:", fallbackError);
+        }
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchQuote();
   }, []);
 

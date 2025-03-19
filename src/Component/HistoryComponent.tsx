@@ -29,7 +29,6 @@ const HistoryComponent: React.FC<HistoryComponentProps> = ({ quote, author, crea
     </>
   );
 };
-
 const styles = StyleSheet.create({
   quoteCard: {
     backgroundColor: "#4F46E5",
